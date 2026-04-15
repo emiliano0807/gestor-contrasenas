@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Contraseñas Seguras</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <!-- Pantalla de Login -->
+    <main id="login-section" class="glass-panel active">
+        <div class="header">
+            <i class="fa-solid fa-lock icon-large"></i>
+            <h1>Inicia Sesión</h1>
+            <p>Accede a tu bóveda segura</p>
+        </div>
+        <form id="login-form">
+            <div class="input-group">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="username" placeholder="Usuario" required>
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-key"></i>
+                <input type="password" id="password" placeholder="Contraseña principal" required>
+            </div>
+            <p id="login-error" class="error-msg">para la Contraseña y el usuario (Usa: admin / 1234)</p>
+            <button type="submit" class="btn-primary">Entrar <i class="fa-solid fa-arrow-right"></i></button>
+        </form>
+    </main>
+
+    <!-- Panel de Gestor -->
+    <main id="dashboard-section" class="glass-panel hidden">
+        <div class="header dashboard-header">
+            <div class="title-area">
+                <i class="fa-solid fa-shield-halved icon-medium"></i>
+                <h2>Tus Contraseñas</h2>
+            </div>
+            <button id="logout-btn" class="btn-icon" title="Cerrar sesión"><i
+                    class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+
+        <div class="add-password-card">
+            <h3>Nueva Credencial</h3>
+            <form id="add-form">
+                <div class="input-row">
+                    <div class="input-group">
+                        <i class="fa-solid fa-globe"></i>
+                        <input type="text" id="site-name" placeholder="Sitio web o App (ej: Facebook)" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="site-email" placeholder="Correo electrónico" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="text" id="site-password" placeholder="Contraseña" required>
+                    </div>
+                    <button type="submit" class="btn-primary btn-add"><i class="fa-solid fa-plus"></i></button>
+                </div>
+            </form>
+        </div>
+
+        <div class="passwords-list">
+            <h3>Bóveda Guardada</h3>
+            <div id="password-container" class="vault-container">
+                <!-- Se llenará con JavaScript -->
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
