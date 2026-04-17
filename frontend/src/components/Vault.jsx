@@ -96,7 +96,7 @@ export default function Vault({ passwords, onDelete, onEdit, showToast }) {
                   <button className="btn-primary" onClick={saveEdit} style={{ width: 'auto', padding: '6px 12px', background: 'var(--success)' }}>
                     Guardar
                   </button>
-                  <button className="btn-primary" onClick={cancelEdit} style={{ width: 'auto', padding: '6px 12px', background: 'var(--text-muted)' }}>
+                  <button className="btn-primary" onClick={cancelEdit} style={{ width: 'auto', padding: '6px 12px', background: 'var(--danger)' }}>
                     Cancelar
                   </button>
                 </div>
