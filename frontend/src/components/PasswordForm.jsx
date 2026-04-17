@@ -46,7 +46,6 @@ export default function PasswordForm({ onAdd }) {
           <div className="input-group">
             <i className="fa-solid fa-envelope"></i>
             <input 
-              type="email" 
               placeholder="Correo electrónico" 
               value={email}
               onChange={e => setEmail(e.target.value)}
