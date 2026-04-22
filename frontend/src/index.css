@@ -37,13 +37,11 @@ body {
     padding: 20px;
 }
 
-/* Ocultar animaciones de fondo que el usuario no quiere */
 .background-shapes {
     display: none;
 }
 
-/* Contenedores principales */
-.glass-panel { /* Mantengo el nombre de la clase por el HTML, pero no será tipo vidrio */
+.glass-panel {
     background: var(--panel-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -68,7 +66,6 @@ body {
     padding: 40px;
 }
 
-/* Tipografía e Iconos */
 .header {
     text-align: center;
     margin-bottom: 25px;
@@ -100,12 +97,31 @@ body {
     color: var(--primary);
 }
 
-h1 { font-size: 1.5rem; font-weight: 600; color: var(--text-main); margin-bottom: 8px; }
-h2 { font-size: 1.3rem; font-weight: 600; color: var(--text-main); }
-h3 { font-size: 1.1rem; color: var(--text-main); margin-bottom: 15px; font-weight: 500; }
-p { color: var(--text-muted); font-size: 0.95rem; }
+h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
 
-/* Formularios e Inputs */
+h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+h3 {
+    font-size: 1.1rem;
+    color: var(--text-main);
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
 .input-group {
     position: relative;
     margin-bottom: 15px;
@@ -145,7 +161,6 @@ input:focus {
     display: none;
 }
 
-/* Botones */
 .btn-primary {
     width: 100%;
     background: var(--primary);
@@ -186,7 +201,6 @@ input:focus {
     background: #fef2f2;
 }
 
-/* Dashboard Specifics */
 .add-password-card {
     background: var(--bg-color);
     border: 1px solid var(--border-color);
@@ -220,11 +234,22 @@ input:focus {
     padding-right: 8px;
 }
 
-/* Custom Scrollbar más limpia */
-.vault-container::-webkit-scrollbar { width: 6px; }
-.vault-container::-webkit-scrollbar-track { background: transparent; }
-.vault-container::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-.vault-container::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+.vault-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.vault-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.vault-container::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+}
+
+.vault-container::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
 
 .vault-item {
     background: var(--panel-bg);
@@ -238,7 +263,7 @@ input:focus {
 }
 
 .vault-item:hover {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .item-info {
@@ -247,8 +272,16 @@ input:focus {
     gap: 4px;
 }
 
-.item-site { font-weight: 500; color: var(--text-main); font-size: 1.05rem; }
-.item-email { font-size: 0.85rem; color: var(--text-muted); }
+.item-site {
+    font-weight: 500;
+    color: var(--text-main);
+    font-size: 1.05rem;
+}
+
+.item-email {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
 
 .item-pass-container {
     display: flex;
@@ -285,18 +318,43 @@ input:focus {
     transition: all 0.2s;
 }
 
-.action-btn:hover { background: var(--bg-color); color: var(--text-main); }
-.action-btn.delete:hover { color: var(--danger); background: #fef2f2; }
-.action-btn.copy:hover { color: var(--primary); background: #eff6ff; }
-
-@media (max-width: 600px) {
-    .input-row { flex-direction: column; gap: 8px; }
-    .btn-add { width: 100%; height: auto; }
-    .vault-item { flex-direction: column; align-items: flex-start; gap: 12px; }
-    .item-actions { align-self: flex-end; }
+.action-btn:hover {
+    background: var(--bg-color);
+    color: var(--text-main);
 }
 
-/* Toast Notification */
+.action-btn.delete:hover {
+    color: var(--danger);
+    background: #fef2f2;
+}
+
+.action-btn.copy:hover {
+    color: var(--primary);
+    background: #eff6ff;
+}
+
+@media (max-width: 600px) {
+    .input-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-add {
+        width: 100%;
+        height: auto;
+    }
+
+    .vault-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .item-actions {
+        align-self: flex-end;
+    }
+}
+
 .toast {
     position: fixed;
     bottom: 20px;
@@ -309,10 +367,4 @@ input:focus {
     z-index: 1000;
     font-weight: 500;
     font-size: 0.95rem;
-    animation: slideUp 0.3s ease forwards;
-}
-
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
 }

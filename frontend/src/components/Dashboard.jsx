@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import PasswordForm from "./PasswordForm";
 import PasswordUtilities from "./PasswordUtilities";
 import Vault from "./Vault";
@@ -148,119 +149,182 @@ export default function Dashboard({ currentUser, onLogout, showToast }) {
 
   return (
     <>
-      <main
+      <motion.main
         className="glass-panel active"
         style={{
           maxWidth: "800px",
           display: "block",
           position: "relative",
           margin: "0 auto",
+          zIndex: 1,
         }}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <div className="header dashboard-header">
+        <motion.div
+          className="header dashboard-header"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+        >
           <div className="title-area">
-            <i className="fa-solid fa-shield-halved icon-medium"></i>
-            <h2>Bóveda de {currentUser.username}</h2>
+            <motion.i
+              className="fa-solid fa-shield-halved icon-medium"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
+            />
+            <motion.h2
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
+              Bóveda de {currentUser.username}
+            </motion.h2>
           </div>
-          <button className="btn-icon" title="Cerrar sesión" onClick={onLogout}>
+          <motion.button
+            className="btn-icon"
+            title="Cerrar sesión"
+            onClick={onLogout}
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          >
             <i className="fa-solid fa-right-from-bracket"></i>
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
 
-        <PasswordForm onAdd={handleAddPassword} />
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.25 }}
+        >
+          <PasswordForm onAdd={handleAddPassword} />
+        </motion.div>
 
-        <PasswordUtilities showToast={showToast} />
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.35 }}
+        >
+          <PasswordUtilities showToast={showToast} />
+        </motion.div>
 
-        <Vault
-          passwords={passwords}
-          onDelete={handleDeletePassword} // Ahora solo actualiza el estado, no borra de inmediato
-          onEdit={handleEditPassword}
-          showToast={showToast}
-        />
-      </main>
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.45 }}
+        >
+          <Vault
+            passwords={passwords}
+            onDelete={handleDeletePassword} // Ahora solo actualiza el estado, no borra de inmediato
+            onEdit={handleEditPassword}
+            showToast={showToast}
+          />
+        </motion.div>
+      </motion.main>
 
       {/* MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
-      {itemToDelete && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
-            backdropFilter: "blur(4px)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            className="glass-panel active"
+      <AnimatePresence>
+        {itemToDelete && (
+          <motion.div
             style={{
-              padding: "30px",
-              borderRadius: "20px",
-              textAlign: "center",
-              backgroundColor: "var(--panel-bg)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              maxWidth: "400px",
-              width: "90%",
-              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 9999,
             }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
           >
-            <i
-              className="fa-solid fa-triangle-exclamation"
+            <motion.div
+              className="glass-panel active"
               style={{
-                fontSize: "3.5rem",
-                color: "#ef4444",
-                marginBottom: "15px",
+                padding: "30px",
+                borderRadius: "20px",
+                textAlign: "center",
+                backgroundColor: "var(--panel-bg)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                maxWidth: "400px",
+                width: "90%",
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
               }}
-            ></i>
-            <h3
-              style={{
-                marginBottom: "10px",
-                color: "var(--text-main)",
-                fontSize: "1.5rem",
-              }}
+              initial={{ scale: 0.8, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 30 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
             >
-              ¿Eliminar credencial?
-            </h3>
-            <p
-              style={{
-                marginBottom: "25px",
-                color: "var(--text-muted)",
-                fontSize: "0.95rem",
-              }}
-            >
-              Esta acción no se puede deshacer. La contraseña se borrará
-              permanentemente de tu boveda.
-            </p>
-            <div
-              style={{ display: "flex", justifyContent: "center", gap: "15px" }}
-            >
-              <button
-                className="btn-primary"
-                onClick={cancelDelete}
+              <motion.i
+                className="fa-solid fa-triangle-exclamation"
                 style={{
-                  background: "transparent",
-                  border: "1px solid var(--text-muted)",
+                  fontSize: "3.5rem",
+                  color: "#ef4444",
+                  marginBottom: "15px",
+                  display: "inline-block",
+                }}
+                initial={{ scale: 0, rotate: -20 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.1 }}
+              />
+              <h3
+                style={{
+                  marginBottom: "10px",
                   color: "var(--text-main)",
+                  fontSize: "1.5rem",
                 }}
               >
-                Cancelar
-              </button>
-              <button
-                className="btn-primary"
-                onClick={executeDelete}
-                style={{ background: "#ef4444", border: "1px solid #ef4444" }}
+                ¿Eliminar credencial?
+              </h3>
+              <p
+                style={{
+                  marginBottom: "25px",
+                  color: "var(--text-muted)",
+                  fontSize: "0.95rem",
+                }}
               >
-                Sí, eliminar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                Esta acción no se puede deshacer. La contraseña se borrará
+                permanentemente de tu boveda.
+              </p>
+              <div
+                style={{ display: "flex", justifyContent: "center", gap: "15px" }}
+              >
+                <motion.button
+                  className="btn-primary"
+                  onClick={cancelDelete}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid var(--text-muted)",
+                    color: "var(--text-main)",
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Cancelar
+                </motion.button>
+                <motion.button
+                  className="btn-primary"
+                  onClick={executeDelete}
+                  style={{ background: "#ef4444", border: "1px solid #ef4444" }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Sí, eliminar
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
