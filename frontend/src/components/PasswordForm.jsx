@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'motion/react';
 import { generatePassword } from '../utils/password';
 
 export default function PasswordForm({ onAdd }) {
@@ -30,10 +31,21 @@ export default function PasswordForm({ onAdd }) {
 
   return (
     <div className="add-password-card">
-      <h3>Nueva Credencial</h3>
+      <motion.h3
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        Nueva Credencial
+      </motion.h3>
       <form onSubmit={handleSubmit} id="add-form">
         <div className="input-row">
-          <div className="input-group">
+          <motion.div
+            className="input-group"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
             <i className="fa-solid fa-globe"></i>
             <input 
               type="text" 
@@ -42,8 +54,13 @@ export default function PasswordForm({ onAdd }) {
               onChange={e => setSite(e.target.value)}
               required 
             />
-          </div>
-          <div className="input-group">
+          </motion.div>
+          <motion.div
+            className="input-group"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
             <i className="fa-solid fa-envelope"></i>
             <input 
               placeholder="Correo electrónico" 
@@ -51,8 +68,14 @@ export default function PasswordForm({ onAdd }) {
               onChange={e => setEmail(e.target.value)}
               required 
             />
-          </div>
-          <div className="input-group" style={{ display: 'flex', alignItems: 'center' }}>
+          </motion.div>
+          <motion.div
+            className="input-group"
+            style={{ display: 'flex', alignItems: 'center' }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
             <i className="fa-solid fa-lock" style={{ position: 'absolute', left: '14px' }}></i>
             <input 
               type={showPass ? "text" : "password"}
@@ -69,16 +92,37 @@ export default function PasswordForm({ onAdd }) {
             >
               <i className={`fa-solid ${showPass ? 'fa-eye-slash' : 'fa-eye'}`} style={{ position: 'relative', left: 'auto', top: 'auto', transform: 'none' }}></i>
             </button>
-          </div>
+          </motion.div>
           
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button type="button" className="btn-primary btn-add" onClick={handleGenerate} title="Generar Contraseña Segura" style={{ background: 'var(--success)' }}>
+          <motion.div
+            style={{ display: 'flex', gap: '8px' }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
+          >
+            <motion.button
+              type="button"
+              className="btn-primary btn-add"
+              onClick={handleGenerate}
+              title="Generar Contraseña Segura"
+              style={{ background: 'var(--success)' }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
               <i className="fa-solid fa-wand-magic-sparkles"></i>
-            </button>
-            <button type="submit" className="btn-primary btn-add" title="Guardar">
+            </motion.button>
+            <motion.button
+              type="submit"
+              className="btn-primary btn-add"
+              title="Guardar"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
               <i className="fa-solid fa-plus"></i>
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         </div>
       </form>
     </div>

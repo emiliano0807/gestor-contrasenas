@@ -1,5 +1,29 @@
 import { useState } from "react";
+import { motion } from "motion/react";
 import "./auth-sliding.css";
+
+// Componente helper para animar texto letra por letra
+function AnimatedText({ text, tag: Tag = "span", className, style, delay = 0 }) {
+  return (
+    <Tag className={className} style={{ ...style, display: "inline-block" }}>
+      {text.split("").map((char, i) => (
+        <motion.span
+          key={i}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.3,
+            delay: delay + i * 0.03,
+            ease: "easeOut",
+          }}
+          style={{ display: "inline-block", whiteSpace: char === " " ? "pre" : "normal" }}
+        >
+          {char}
+        </motion.span>
+      ))}
+    </Tag>
+  );
+}
 
 export default function Auth({ onLogin, showToast }) {
   const [isRightPanelActive, setIsRightPanelActive] = useState(false);
@@ -109,20 +133,40 @@ export default function Auth({ onLogin, showToast }) {
   };
 
   return (
-    <div
+    <motion.div
       className={`auth-container ${isRightPanelActive ? "right-panel-active" : ""}`}
       id="auth-box"
-      style={{ minHeight: "480px" }}
+      style={{ minHeight: "480px", position: "relative", zIndex: 1 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     >
       {/* Sign Up Form */}
       <div className="form-container sign-up-container">
         <form className="auth-form" onSubmit={handleSignUp}>
-          <h1 style={{ marginBottom: "10px" }}>Crear Bóveda</h1>
-          <p style={{ marginBottom: "20px" }}>
+          <motion.h1
+            style={{ marginBottom: "10px" }}
+            initial={{ opacity: 0, y: -15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            Crear Bóveda
+          </motion.h1>
+          <motion.p
+            style={{ marginBottom: "20px" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+          >
             Registra tu correo y contraseña maestra
-          </p>
+          </motion.p>
 
-          <div className="auth-input-container">
+          <motion.div
+            className="auth-input-container"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+          >
             <i
               className="fa-solid fa-envelope icon-prefix"
               style={{ position: "absolute", left: "15px" }}
@@ -134,11 +178,14 @@ export default function Auth({ onLogin, showToast }) {
               onChange={(e) => setSignUpEmail(e.target.value)}
               required
             />
-          </div>
+          </motion.div>
 
-          <div
+          <motion.div
             className="auth-input-container"
             style={{ marginBottom: "10px" }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.4 }}
           >
             <i
               className="fa-solid fa-shield-halved icon-prefix"
@@ -169,10 +216,10 @@ export default function Auth({ onLogin, showToast }) {
                 style={{ position: "static", transform: "none" }}
               ></i>
             </button>
-          </div>
+          </motion.div>
 
           {/* Panel de Requisitos de Seguridad */}
-          <div
+          <motion.div
             style={{
               width: "100%",
               textAlign: "left",
@@ -182,6 +229,9 @@ export default function Auth({ onLogin, showToast }) {
               borderRadius: "8px",
               marginBottom: "20px",
             }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.5 }}
           >
             <ul
               style={{
@@ -240,9 +290,9 @@ export default function Auth({ onLogin, showToast }) {
                 (!@#$...)
               </li>
             </ul>
-          </div>
+          </motion.div>
 
-          <button
+          <motion.button
             type="submit"
             className="auth-btn"
             disabled={!isPassValid}
@@ -250,19 +300,39 @@ export default function Auth({ onLogin, showToast }) {
               opacity: isPassValid ? 1 : 0.6,
               cursor: isPassValid ? "pointer" : "not-allowed",
             }}
+            whileHover={isPassValid ? { scale: 1.05 } : {}}
+            whileTap={isPassValid ? { scale: 0.95 } : {}}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             Registrar Bóveda
-          </button>
+          </motion.button>
         </form>
       </div>
 
       {/* Sign In Form */}
       <div className="form-container sign-in-container">
         <form className="auth-form" onSubmit={handleSignIn}>
-          <h1>Iniciar Sesión</h1>
-          <p>Accede con tus credenciales</p>
+          <motion.h1
+            initial={{ opacity: 0, y: -15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            Iniciar Sesión
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+          >
+            Accede con tus credenciales
+          </motion.p>
 
-          <div className="auth-input-container">
+          <motion.div
+            className="auth-input-container"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
             <i
               className="fa-solid fa-envelope icon-prefix"
               style={{ position: "absolute", left: "15px" }}
@@ -274,9 +344,14 @@ export default function Auth({ onLogin, showToast }) {
               onChange={(e) => setSignInEmail(e.target.value)}
               required
             />
-          </div>
+          </motion.div>
 
-          <div className="auth-input-container">
+          <motion.div
+            className="auth-input-container"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+          >
             <i
               className="fa-solid fa-key icon-prefix"
               style={{ position: "absolute", left: "15px" }}
@@ -306,11 +381,17 @@ export default function Auth({ onLogin, showToast }) {
                 style={{ position: "static", transform: "none" }}
               ></i>
             </button>
-          </div>
+          </motion.div>
 
-          <button type="submit" className="auth-btn">
+          <motion.button
+            type="submit"
+            className="auth-btn"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          >
             Iniciar Sesion
-          </button>
+          </motion.button>
         </form>
       </div>
 
@@ -318,45 +399,67 @@ export default function Auth({ onLogin, showToast }) {
       <div className="overlay-container">
         <div className="overlay">
           <div className="overlay-panel overlay-left">
-            <h1 style={{ color: "#fff" }}>¡Bienvenido!</h1>
-            <p
+            <AnimatedText
+              text="¡Bienvenido!"
+              tag="h1"
+              style={{ color: "#fff" }}
+              key={isRightPanelActive ? "left-visible" : "left-hidden"}
+            />
+            <motion.p
               style={{
                 color: "#fff",
                 fontSize: "15px",
                 marginTop: "20px",
                 marginBottom: "30px",
               }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
             >
               Inicia sesión para acceder a tu bóveda.
-            </p>
-            <button
+            </motion.p>
+            <motion.button
               className="auth-btn ghost"
               onClick={() => setIsRightPanelActive(false)}
+              whileHover={{ scale: 1.08, boxShadow: "0 0 20px rgba(255,255,255,0.3)" }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               Iniciar Sesión
-            </button>
+            </motion.button>
           </div>
           <div className="overlay-panel overlay-right">
-            <h1 style={{ color: "#fff" }}>¿Nuevo?</h1>
-            <p
+            <AnimatedText
+              text="¿Nuevo?"
+              tag="h1"
+              style={{ color: "#fff" }}
+              key={!isRightPanelActive ? "right-visible" : "right-hidden"}
+            />
+            <motion.p
               style={{
                 color: "#fff",
                 fontSize: "15px",
                 marginTop: "20px",
                 marginBottom: "30px",
               }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
             >
               Crea tu bóveda registrando tu nueva cuenta aquí.
-            </p>
-            <button
+            </motion.p>
+            <motion.button
               className="auth-btn ghost"
               onClick={() => setIsRightPanelActive(true)}
+              whileHover={{ scale: 1.08, boxShadow: "0 0 20px rgba(255,255,255,0.3)" }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               Registrarse
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
