@@ -50,11 +50,16 @@ function App() {
   const handleLogin = (user, token) => {
     setCurrentUser(user);
     localStorage.setItem("token", token); // Guardamos el JWT real
+    sessionStorage.setItem("currentUser", JSON.stringify(user)); // Guarda el objeto con two_factor_enabled
+    if (token) {
+      localStorage.setItem("token", token); 
+    }
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("currentUser");
+    localStorage.removeItem("token"); 
   };
 
   return (

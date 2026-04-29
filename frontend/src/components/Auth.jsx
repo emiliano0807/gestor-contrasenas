@@ -1,44 +1,24 @@
 import { useState } from "react";
-import { motion } from "motion/react";
 import "./auth-sliding.css";
-
-// Componente helper para animar texto letra por letra
-function AnimatedText({ text, tag: Tag = "span", className, style, delay = 0 }) {
-  return (
-    <Tag className={className} style={{ ...style, display: "inline-block" }}>
-      {text.split("").map((char, i) => (
-        <motion.span
-          key={i}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: 0.3,
-            delay: delay + i * 0.03,
-            ease: "easeOut",
-          }}
-          style={{ display: "inline-block", whiteSpace: char === " " ? "pre" : "normal" }}
-        >
-          {char}
-        </motion.span>
-      ))}
-    </Tag>
-  );
-}
 
 export default function Auth({ onLogin, showToast }) {
   const [isRightPanelActive, setIsRightPanelActive] = useState(false);
 
-  // Sign In State (Cambiado a Email)
+  // Estados de Login
   const [signInEmail, setSignInEmail] = useState("");
   const [signInPass, setSignInPass] = useState("");
   const [showSignInPass, setShowSignInPass] = useState(false);
 
-  // Sign Up State (Cambiado a Email)
+  // NUEVOS ESTADOS PARA 2FA
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [tempUserId, setTempUserId] = useState(null);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+
+  // Estados de Registro
   const [signUpEmail, setSignUpEmail] = useState("");
   const [signUpPass, setSignUpPass] = useState("");
   const [showSignUpPass, setShowSignUpPass] = useState(false);
 
-  // Lógica de Validación de Contraseña Maestra
   const passReqs = {
     length: signUpPass.length >= 8,
     upper: /[A-Z]/.test(signUpPass),
@@ -46,10 +26,9 @@ export default function Auth({ onLogin, showToast }) {
     number: /[0-9]/.test(signUpPass),
     special: /[^A-Za-z0-9]/.test(signUpPass),
   };
-
-  // Verifica si TODOS los requisitos son verdaderos
   const isPassValid = Object.values(passReqs).every(Boolean);
 
+  // PASO 1 DEL LOGIN
   const handleSignIn = async (e) => {
     e.preventDefault();
     if (!signInEmail || !signInPass) {
@@ -61,20 +40,59 @@ export default function Auth({ onLogin, showToast }) {
       const res = await fetch("http://localhost/api1/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Enviamos el email bajo la clave 'username' para no romper tu backend actual
         body: JSON.stringify({ username: signInEmail, password: signInPass }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        onLogin({ username: signInEmail }, data.token);
+        if (data.requires2FA) {
+          // El servidor dice que necesitamos código
+          setTempUserId(data.userId);
+          setRequires2FA(true);
+          if (showToast) showToast("Ingresa tu código de autenticación");
+        } else {
+          // No tiene 2FA, entramos directo
+          onLogin(
+            { username: signInEmail, two_factor_enabled: false },
+            data.token,
+          );
+        }
       } else {
         if (showToast) showToast(data.error || "Credenciales incorrectas");
       }
     } catch (error) {
       if (showToast) showToast("Error al conectar con el servidor");
-      console.log(error);
+    }
+  };
+
+  const handle2FASubmit = async (e) => {
+    e.preventDefault();
+    if (!twoFactorCode || twoFactorCode.length !== 6) {
+      if (showToast) showToast("Ingresa un código válido de 6 dígitos.");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost/api1/api/users/login/2fa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: tempUserId, token: twoFactorCode }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Código válido, el servidor nos dio el JWT
+        onLogin(
+          { username: signInEmail, two_factor_enabled: true },
+          data.token,
+        );
+      } else {
+        if (showToast) showToast(data.error || "Código incorrecto");
+      }
+    } catch (error) {
+      if (showToast) showToast("Error de conexión");
     }
   };
 
@@ -97,7 +115,6 @@ export default function Auth({ onLogin, showToast }) {
       const res = await fetch("http://localhost/api1/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Enviamos el email bajo la clave 'username'
         body: JSON.stringify({ username: signUpEmail, password: signUpPass }),
       });
 
@@ -114,11 +131,9 @@ export default function Auth({ onLogin, showToast }) {
       }
     } catch (error) {
       if (showToast) showToast("Error al conectar con el servidor");
-      console.log(error);
     }
   };
 
-  // Función auxiliar para renderizar los iconos de checklist
   const renderCheckIcon = (isValid) => {
     return (
       <i
@@ -133,40 +148,24 @@ export default function Auth({ onLogin, showToast }) {
   };
 
   return (
-    <motion.div
+    <div
       className={`auth-container ${isRightPanelActive ? "right-panel-active" : ""}`}
       id="auth-box"
-      style={{ minHeight: "480px", position: "relative", zIndex: 1 }}
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      style={{ minHeight: "480px" }}
     >
       {/* Sign Up Form */}
       <div className="form-container sign-up-container">
-        <form className="auth-form" onSubmit={handleSignUp}>
-          <motion.h1
-            style={{ marginBottom: "10px" }}
-            initial={{ opacity: 0, y: -15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            Crear Bóveda
-          </motion.h1>
-          <motion.p
-            style={{ marginBottom: "20px" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.35 }}
-          >
+        <form
+          className="auth-form"
+          onSubmit={handleSignUp}
+          style={{ padding: "0 40px" }}
+        >
+          <h1 style={{ marginBottom: "10px" }}>Crear Bóveda</h1>
+          <p style={{ marginBottom: "20px" }}>
             Registra tu correo y contraseña maestra
-          </motion.p>
+          </p>
 
-          <motion.div
-            className="auth-input-container"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-          >
+          <div className="auth-input-container">
             <i
               className="fa-solid fa-envelope icon-prefix"
               style={{ position: "absolute", left: "15px" }}
@@ -178,14 +177,11 @@ export default function Auth({ onLogin, showToast }) {
               onChange={(e) => setSignUpEmail(e.target.value)}
               required
             />
-          </motion.div>
+          </div>
 
-          <motion.div
+          <div
             className="auth-input-container"
             style={{ marginBottom: "10px" }}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, delay: 0.4 }}
           >
             <i
               className="fa-solid fa-shield-halved icon-prefix"
@@ -216,10 +212,9 @@ export default function Auth({ onLogin, showToast }) {
                 style={{ position: "static", transform: "none" }}
               ></i>
             </button>
-          </motion.div>
+          </div>
 
-          {/* Panel de Requisitos de Seguridad */}
-          <motion.div
+          <div
             style={{
               width: "100%",
               textAlign: "left",
@@ -229,9 +224,6 @@ export default function Auth({ onLogin, showToast }) {
               borderRadius: "8px",
               marginBottom: "20px",
             }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.5 }}
           >
             <ul
               style={{
@@ -287,12 +279,11 @@ export default function Auth({ onLogin, showToast }) {
                 }}
               >
                 {renderCheckIcon(passReqs.special)} Un carácter especial
-                (!@#$...)
               </li>
             </ul>
-          </motion.div>
+          </div>
 
-          <motion.button
+          <button
             type="submit"
             className="auth-btn"
             disabled={!isPassValid}
@@ -300,166 +291,173 @@ export default function Auth({ onLogin, showToast }) {
               opacity: isPassValid ? 1 : 0.6,
               cursor: isPassValid ? "pointer" : "not-allowed",
             }}
-            whileHover={isPassValid ? { scale: 1.05 } : {}}
-            whileTap={isPassValid ? { scale: 0.95 } : {}}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             Registrar Bóveda
-          </motion.button>
+          </button>
         </form>
       </div>
 
       {/* Sign In Form */}
       <div className="form-container sign-in-container">
-        <form className="auth-form" onSubmit={handleSignIn}>
-          <motion.h1
-            initial={{ opacity: 0, y: -15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            Iniciar Sesión
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.25 }}
-          >
-            Accede con tus credenciales
-          </motion.p>
+        {/* RENDERIZADO CONDICIONAL: Muestra el Login normal O la pantalla de ingresar código */}
+        {!requires2FA ? (
+          <form className="auth-form" onSubmit={handleSignIn}>
+            <h1>Iniciar Sesión</h1>
+            <p>Accede con tu correo y contraseña maestra</p>
 
-          <motion.div
-            className="auth-input-container"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-          >
-            <i
-              className="fa-solid fa-envelope icon-prefix"
-              style={{ position: "absolute", left: "15px" }}
-            ></i>
-            <input
-              type="email"
-              placeholder="Correo Electrónico"
-              value={signInEmail}
-              onChange={(e) => setSignInEmail(e.target.value)}
-              required
-            />
-          </motion.div>
+            <div className="auth-input-container">
+              <i
+                className="fa-solid fa-envelope icon-prefix"
+                style={{ position: "absolute", left: "15px" }}
+              ></i>
+              <input
+                type="email"
+                placeholder="Correo Electrónico"
+                value={signInEmail}
+                onChange={(e) => setSignInEmail(e.target.value)}
+                required
+              />
+            </div>
 
-          <motion.div
-            className="auth-input-container"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-          >
+            <div className="auth-input-container">
+              <i
+                className="fa-solid fa-key icon-prefix"
+                style={{ position: "absolute", left: "15px" }}
+              ></i>
+              <input
+                type={showSignInPass ? "text" : "password"}
+                placeholder="Contraseña Maestra"
+                value={signInPass}
+                onChange={(e) => setSignInPass(e.target.value)}
+                required
+                style={{ paddingRight: "40px" }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowSignInPass(!showSignInPass)}
+                style={{
+                  position: "absolute",
+                  right: "15px",
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-muted)",
+                  cursor: "pointer",
+                }}
+              >
+                <i
+                  className={`fa-solid ${showSignInPass ? "fa-eye-slash" : "fa-eye"}`}
+                  style={{ position: "static", transform: "none" }}
+                ></i>
+              </button>
+            </div>
+
+            <button type="submit" className="auth-btn">
+              Desbloquear Bóveda
+            </button>
+          </form>
+        ) : (
+          <form className="auth-form" onSubmit={handle2FASubmit}>
             <i
-              className="fa-solid fa-key icon-prefix"
-              style={{ position: "absolute", left: "15px" }}
+              className="fa-solid fa-shield-check"
+              style={{
+                fontSize: "3rem",
+                color: "var(--primary)",
+                marginBottom: "15px",
+              }}
             ></i>
-            <input
-              type={showSignInPass ? "text" : "password"}
-              placeholder="Contraseña Maestra"
-              value={signInPass}
-              onChange={(e) => setSignInPass(e.target.value)}
-              required
-              style={{ paddingRight: "40px" }}
-            />
+            <h1>Autenticación 2FA</h1>
+            <p>
+              Ingresa el código de 6 dígitos generado por tu aplicación móvil.
+            </p>
+
+            <div className="auth-input-container" style={{ margin: "20px 0" }}>
+              <i
+                className="fa-solid fa-clock-rotate-left icon-prefix"
+                style={{ position: "absolute", left: "15px" }}
+              ></i>
+              <input
+                type="text"
+                placeholder="000000"
+                maxLength="6"
+                value={twoFactorCode}
+                onChange={(e) => setTwoFactorCode(e.target.value)}
+                required
+                style={{
+                  textAlign: "center",
+                  fontSize: "1.5rem",
+                  letterSpacing: "8px",
+                  paddingLeft: "0",
+                }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="auth-btn"
+              style={{ width: "100%" }}
+            >
+              Verificar Identidad
+            </button>
             <button
               type="button"
-              onClick={() => setShowSignInPass(!showSignInPass)}
+              onClick={() => setRequires2FA(false)}
               style={{
-                position: "absolute",
-                right: "15px",
                 background: "none",
                 border: "none",
                 color: "var(--text-muted)",
+                marginTop: "20px",
                 cursor: "pointer",
               }}
             >
-              <i
-                className={`fa-solid ${showSignInPass ? "fa-eye-slash" : "fa-eye"}`}
-                style={{ position: "static", transform: "none" }}
-              ></i>
+              Volver
             </button>
-          </motion.div>
-
-          <motion.button
-            type="submit"
-            className="auth-btn"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-          >
-            Iniciar Sesion
-          </motion.button>
-        </form>
+          </form>
+        )}
       </div>
 
       {/* Overlay Animations */}
       <div className="overlay-container">
         <div className="overlay">
           <div className="overlay-panel overlay-left">
-            <AnimatedText
-              text="¡Bienvenido!"
-              tag="h1"
-              style={{ color: "#fff" }}
-              key={isRightPanelActive ? "left-visible" : "left-hidden"}
-            />
-            <motion.p
+            <h1 style={{ color: "#fff" }}>¡Bienvenido!</h1>
+            <p
               style={{
                 color: "#fff",
                 fontSize: "15px",
                 marginTop: "20px",
                 marginBottom: "30px",
               }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
             >
-              Inicia sesión para acceder a tu bóveda.
-            </motion.p>
-            <motion.button
+              Desbloquea tu bóveda personal para acceder a tus credenciales.
+            </p>
+            <button
               className="auth-btn ghost"
               onClick={() => setIsRightPanelActive(false)}
-              whileHover={{ scale: 1.08, boxShadow: "0 0 20px rgba(255,255,255,0.3)" }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               Iniciar Sesión
-            </motion.button>
+            </button>
           </div>
           <div className="overlay-panel overlay-right">
-            <AnimatedText
-              text="¿Nuevo?"
-              tag="h1"
-              style={{ color: "#fff" }}
-              key={!isRightPanelActive ? "right-visible" : "right-hidden"}
-            />
-            <motion.p
+            <h1 style={{ color: "#fff" }}>¿Nuevo?</h1>
+            <p
               style={{
                 color: "#fff",
                 fontSize: "15px",
                 marginTop: "20px",
                 marginBottom: "30px",
               }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
             >
-              Crea tu bóveda registrando tu nueva cuenta aquí.
-            </motion.p>
-            <motion.button
+              Protege tus credenciales creando una bóveda segura.
+            </p>
+            <button
               className="auth-btn ghost"
               onClick={() => setIsRightPanelActive(true)}
-              whileHover={{ scale: 1.08, boxShadow: "0 0 20px rgba(255,255,255,0.3)" }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               Registrarse
-            </motion.button>
+            </button>
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

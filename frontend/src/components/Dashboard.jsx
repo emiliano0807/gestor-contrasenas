@@ -3,15 +3,46 @@ import { motion, AnimatePresence } from "motion/react";
 import PasswordForm from "./PasswordForm";
 import PasswordUtilities from "./PasswordUtilities";
 import Vault from "./Vault";
+import TwoFactorSetup from "./TwoFactorSetup";
 
 export default function Dashboard({ currentUser, onLogout, showToast }) {
   const [passwords, setPasswords] = useState([]);
-  // NUEVO ESTADO: Controla qué ID se va a eliminar. Si es null, el modal está oculto.
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [show2FA, setShow2FA] = useState(false);
+
+  // NUEVO ESTADO: Memoria absoluta del estado 2FA
+  const [is2FAEnabled, setIs2FAEnabled] = useState(() => {
+    // 1. Revisar si el objeto actual ya lo sabe
+    if (currentUser?.two_factor_enabled !== undefined) {
+      return currentUser.two_factor_enabled;
+    }
+    // 2. Respaldo profundo: Leer directamente del Token JWT firmado por Node
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        if (payload.two_factor_enabled !== undefined) {
+          return payload.two_factor_enabled;
+        }
+      }
+    } catch (e) {}
+    // 3. Último respaldo: Caché persistente del navegador
+    return localStorage.getItem(`2fa_${currentUser?.username}`) === "true";
+  });
 
   const API_URL = "http://localhost/api2/api/vault";
 
-  // CARGAR BÓVEDA DESDE LA BASE DE DATOS
+  const getUserId = () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return null;
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.userId;
+    } catch (e) {
+      return currentUser?.userId;
+    }
+  };
+
   useEffect(() => {
     const fetchVault = async () => {
       const token = localStorage.getItem("token");
@@ -34,14 +65,12 @@ export default function Dashboard({ currentUser, onLogout, showToast }) {
         }
       } catch (error) {
         if (showToast) showToast("Error cargando la bóveda");
-        console.log(error);
       }
     };
 
     fetchVault();
   }, []);
 
-  // AGREGAR NUEVA CONTRASEÑA
   const handleAddPassword = async (newEntry) => {
     const token = localStorage.getItem("token");
     try {
@@ -76,12 +105,10 @@ export default function Dashboard({ currentUser, onLogout, showToast }) {
     }
   };
 
-  // PASO 1: Preparar la eliminación (abre el modal)
   const handleDeletePassword = (id) => {
     setItemToDelete(id);
   };
 
-  // PASO 2: Ejecutar la eliminación tras confirmar en el modal
   const executeDelete = async () => {
     if (!itemToDelete) return;
 
@@ -99,17 +126,14 @@ export default function Dashboard({ currentUser, onLogout, showToast }) {
     } catch (error) {
       if (showToast) showToast("Error al eliminar");
     } finally {
-      // Siempre cerramos el modal al terminar, haya éxito o error
       setItemToDelete(null);
     }
   };
 
-  // Cancelar la eliminación (cierra el modal)
   const cancelDelete = () => {
     setItemToDelete(null);
   };
 
-  // EDITAR CONTRASEÑA
   const handleEditPassword = async (updatedEntry) => {
     const token = localStorage.getItem("token");
     try {
@@ -173,7 +197,12 @@ export default function Dashboard({ currentUser, onLogout, showToast }) {
               className="fa-solid fa-shield-halved icon-medium"
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
+              transition={{
+                type: "spring",
+                stiffness: 200,
+                damping: 15,
+                delay: 0.2,
+              }}
             />
             <motion.h2
               initial={{ opacity: 0, x: -10 }}
@@ -183,16 +212,29 @@ export default function Dashboard({ currentUser, onLogout, showToast }) {
               Bóveda de {currentUser.username}
             </motion.h2>
           </div>
-          <motion.button
-            className="btn-icon"
-            title="Cerrar sesión"
-            onClick={onLogout}
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-          >
-            <i className="fa-solid fa-right-from-bracket"></i>
-          </motion.button>
+
+          <div style={{ display: "flex", gap: "10px" }}>
+            <motion.button
+              className="btn-icon"
+              title="Configurar 2FA (Authenticator)"
+              onClick={() => setShow2FA(true)}
+              whileHover={{ scale: 1.1, rotate: -5 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <i className="fa-solid fa-qrcode"></i>
+            </motion.button>
+            <motion.button
+              className="btn-icon"
+              title="Cerrar sesión"
+              onClick={onLogout}
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <i className="fa-solid fa-right-from-bracket"></i>
+            </motion.button>
+          </div>
         </motion.div>
 
         <motion.div
@@ -218,15 +260,70 @@ export default function Dashboard({ currentUser, onLogout, showToast }) {
         >
           <Vault
             passwords={passwords}
-            onDelete={handleDeletePassword} // Ahora solo actualiza el estado, no borra de inmediato
+            onDelete={handleDeletePassword}
             onEdit={handleEditPassword}
             showToast={showToast}
           />
         </motion.div>
       </motion.main>
 
-      {/* MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
       <AnimatePresence>
+        {show2FA && (
+          <motion.div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 9999,
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 30 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            >
+              <TwoFactorSetup
+                userId={getUserId()}
+                is2FAEnabled={is2FAEnabled}
+                onComplete={() => {
+                  setShow2FA(false);
+                  setIs2FAEnabled(true);
+                  currentUser.two_factor_enabled = true;
+                  sessionStorage.setItem(
+                    "currentUser",
+                    JSON.stringify(currentUser),
+                  );
+                  localStorage.setItem(`2fa_${currentUser.username}`, "true");
+                }}
+                onDisable={() => {
+                  setShow2FA(false);
+                  setIs2FAEnabled(false);
+                  currentUser.two_factor_enabled = false;
+                  sessionStorage.setItem(
+                    "currentUser",
+                    JSON.stringify(currentUser),
+                  );
+                  localStorage.setItem(`2fa_${currentUser.username}`, "false");
+                }}
+                onCancel={() => setShow2FA(false)}
+                showToast={showToast}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+
         {itemToDelete && (
           <motion.div
             style={{
@@ -274,7 +371,12 @@ export default function Dashboard({ currentUser, onLogout, showToast }) {
                 }}
                 initial={{ scale: 0, rotate: -20 }}
                 animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.1 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 15,
+                  delay: 0.1,
+                }}
               />
               <h3
                 style={{
@@ -296,7 +398,11 @@ export default function Dashboard({ currentUser, onLogout, showToast }) {
                 permanentemente de tu boveda.
               </p>
               <div
-                style={{ display: "flex", justifyContent: "center", gap: "15px" }}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "15px",
+                }}
               >
                 <motion.button
                   className="btn-primary"
